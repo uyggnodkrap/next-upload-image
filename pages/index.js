@@ -1,37 +1,37 @@
-import { useState } from 'react';
-import { useS3Upload, getImageData } from 'next-s3-upload';
-import Image from 'next/image';
+import { useState } from "react";
+import { useS3Upload } from "next-s3-upload";
 
-export default function UploadTest() {
-  
-  let [imageUrl, setImageUrl] = useState();
-  let [height, setHeight] = useState();
-  let [width, setWidth] = useState();
-  let { FileInput, openFileDialog, uploadToS3 } = useS3Upload();
+export default function UploadImages() {
+  const [urls, setUrls] = useState([]);
+  const { uploadToS3 } = useS3Upload();
 
-  let handleFileChange = async file => {
-    let { url } = await uploadToS3(file);
-    let { height, width } = await getImageData(file);
-    setWidth(width);
-    setHeight(height);
-    setImageUrl(url);
+  const handleFilesChange = async ({ target }) => {
+    const files = Array.from(target.files);
+
+    for (let index = 0; index < files.length; index++) {
+      const file = files[index];
+      const { url } = await uploadToS3(file);
+
+      setUrls(current => [...current, url]);
+    }
   };
 
   return (
     <div>
-      <FileInput onChange={handleFileChange} />
+      <input
+        type="file"
+        name="file"
+        multiple={true}
+        onChange={handleFilesChange}
+      />
 
-      <button onClick={openFileDialog}>Upload file</button>
-
-      {imageUrl && (
-        <div>
-          <Image src={imageUrl} width={width} height={height} alt = "cannot upload"/>
-          <div>{imageUrl}</div>
-          <div>
-            {height}x{width}
+      <div>
+        {urls.map((url, index) => (
+          <div key={url}>
+            File {index}: ${url}
           </div>
-        </div>
-      )}
+        ))}
+      </div>
     </div>
   );
 }
