@@ -1,12 +1,19 @@
 import { useState } from 'react';
-import { useS3Upload } from 'next-s3-upload';
+import { useS3Upload, getImageData } from 'next-s3-upload';
+import Image from 'next/image';
 
 export default function UploadTest() {
+  
   let [imageUrl, setImageUrl] = useState();
+  let [height, setHeight] = useState();
+  let [width, setWidth] = useState();
   let { FileInput, openFileDialog, uploadToS3 } = useS3Upload();
 
   let handleFileChange = async file => {
     let { url } = await uploadToS3(file);
+    let { height, width } = await getImageData(file);
+    setWidth(width);
+    setHeight(height);
     setImageUrl(url);
   };
 
@@ -16,7 +23,15 @@ export default function UploadTest() {
 
       <button onClick={openFileDialog}>Upload file</button>
 
-      {imageUrl && <img src={imageUrl} />}
+      {imageUrl && (
+        <div>
+          <Image src={imageUrl} width={width} height={height} alt = "cannot upload"/>
+          <div>{imageUrl}</div>
+          <div>
+            {height}x{width}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
